@@ -1,0 +1,23 @@
+# --- секреты и локальные настройки (у каждого свои, в git не едут) ---
+.env
+
+# --- сгенерированные данные (каждый генерирует сам через generate.py) ---
+postgres/seed/data/*.csv
+!postgres/seed/data/.gitkeep
+
+# --- docker volumes / состояние контейнеров ---
+pgdata/
+superset-home/
+cloudbeaver-workspace/
+
+# --- python / jupyter ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- редакторы и ОС ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

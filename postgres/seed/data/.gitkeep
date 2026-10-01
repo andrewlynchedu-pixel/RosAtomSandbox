@@ -1,0 +1,2 @@
+# Пустая метка чтобы папка data/ сохранялась в git без самих CSV.
+# CSV генерируются локально: python postgres/seed/generate.py

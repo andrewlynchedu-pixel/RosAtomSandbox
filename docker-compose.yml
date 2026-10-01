@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: npp-postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-npp}
+      POSTGRES_USER: ${POSTGRES_USER:-npp_analyst}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-npp_password_123}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./postgres/seed/data:/seed-data:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-npp_analyst} -d ${POSTGRES_DB:-npp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:24.3.5
+    container_name: npp-cloudbeaver
+    restart: unless-stopped
+    ports:
+      - "${CLOUDBEAVER_PORT:-8978}:8978"
+    volumes:
+      - cloudbeaver-workspace:/opt/cloudbeaver/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  jupyter:
+    build:
+      context: ./jupyter
+    container_name: npp-jupyter
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    volumes:
+      - ./jupyter/work:/home/jovyan/work
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+    command: start-notebook.py --NotebookApp.token=${JUPYTER_TOKEN:-npp-learning} --NotebookApp.password='' --NotebookApp.ip=0.0.0.0 --NotebookApp.allow_origin='*'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  superset:
+    image: apache/superset:4.1.1
+    container_name: npp-superset
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${SUPERSET_PORT:-8088}:8088"
+    volumes:
+      - ./superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - superset-home:/app/superset_home
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      bash -c "
+      superset db upgrade &&
+      superset fab create-admin --username $${SUPERSET_ADMIN:-admin} --firstname Admin --lastname NPP --email admin@npp.local --password $${SUPERSET_PASSWORD:-admin123} || true &&
+      superset init &&
+      superset run -h 0.0.0.0 -p 8088 --with-threads --reload --debugger
+      "
+
+volumes:
+  pgdata:
+  cloudbeaver-workspace:
+  superset-home:

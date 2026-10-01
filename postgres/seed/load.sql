@@ -1,0 +1,14 @@
+-- Загрузка CSV из /seed-data (см. README раздел "Загрузка данных").
+-- Выполняется вручную после генерации CSV.
+-- COPY employees(id, full_name, department_id, position, hire_date, skill_level, salary_rub) FROM '/seed-data/employees.csv' CSV;
+-- COPY sensor_readings(ts, sensor_id, value, quality) FROM '/seed-data/sensor_readings.csv' CSV;
+-- COPY power_generation(ts, unit_id, power_mw, plan_mw) FROM '/seed-data/power_generation.csv' CSV;
+-- COPY alarms(id, ts, sensor_id, unit_id, severity, message, acknowledged_by, resolved_at) FROM '/seed-data/alarms.csv' CSV NULL AS '\N';
+-- COPY maintenance(work_id, unit_id, system_id, title, work_type, start_date, end_date, cost_rub, contractor) FROM '/seed-data/maintenance.csv' CSV;
+-- COPY shift_schedule(id, employee_id, shift_id, work_date) FROM '/seed-data/shift_schedule.csv' CSV;
+-- COPY dosimetry(id, employee_id, measure_date, dose_msv) FROM '/seed-data/dosimetry.csv' CSV;
+-- SELECT setval('employees_id_seq', (SELECT MAX(id) FROM employees));
+-- SELECT setval('alarms_id_seq', (SELECT MAX(id) FROM alarms));
+-- SELECT setval('maintenance_work_id_seq', (SELECT MAX(work_id) FROM maintenance));
+-- SELECT setval('shift_schedule_id_seq', (SELECT MAX(id) FROM shift_schedule));
+-- SELECT setval('dosimetry_id_seq', (SELECT MAX(id) FROM dosimetry));
